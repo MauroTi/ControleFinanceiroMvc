@@ -11,7 +11,6 @@ namespace ControleFinanceiroMvc.Models.ViewModels
         public string Descricao { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Valor é obrigatório")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Valor deve ser maior que zero")]
         public decimal Valor { get; set; }
 
         [Required(ErrorMessage = "Tipo é obrigatório")]

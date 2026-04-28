@@ -1,0 +1,70 @@
+@model IReadOnlyList<ControleFinanceiroMvc.Models.ViewModels.CategoriaViewModel>
+
+@{
+    ViewData["Title"] = "Categorias";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 mb-1">Categorias</h1>
+        <p class="text-muted mb-0">Organize receitas e despesas para o usuário atual.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Nova">Nova categoria</a>
+</div>
+
+@if (TempData["Sucesso"] is string mensagemSucesso)
+{
+    <div class="alert alert-success" role="alert">
+        @mensagemSucesso
+    </div>
+}
+
+@if (TempData["Erro"] is string mensagemErro)
+{
+    <div class="alert alert-warning" role="alert">
+        @mensagemErro
+    </div>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="card shadow-sm">
+        <div class="card-body py-4 text-center">
+            <h2 class="h5">Nenhuma categoria cadastrada</h2>
+            <p class="text-muted mb-3">Crie sua primeira categoria para começar a organizar os lançamentos.</p>
+            <a class="btn btn-outline-primary" asp-action="Nova">Cadastrar categoria</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var categoria in Model)
+                {
+                    <tr>
+                        <td>@categoria.Nome</td>
+                        <td>@categoria.Tipo</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary me-1" asp-action="Editar" asp-route-id="@categoria.Id">Editar</a>
+                            <form asp-action="Excluir" asp-route-id="@categoria.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir esta categoria?');">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

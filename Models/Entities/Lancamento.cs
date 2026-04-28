@@ -1,4 +1,4 @@
-﻿namespace ControleFinanceiroMvc.Models.Entities
+namespace ControleFinanceiroMvc.Models.Entities
 {
     public class Lancamento
     {
@@ -8,8 +8,10 @@
         public int CategoriaId { get; set; }
 
         public string Descricao { get; set; } = string.Empty;
-        public string decimal Valor {  get; set; }
+        public decimal Valor { get; set; }
         public string Tipo { get; set; } = string.Empty;
+        public DateTime DataLancamento { get; set; }
+        public string? Observacao { get; set; }
         public DateTime CriadoEm { get; set; }
         public DateTime? AtualizadoEm { get; set; }
     }

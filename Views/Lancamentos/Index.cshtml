@@ -1,0 +1,147 @@
+@model ControleFinanceiroMvc.Models.ViewModels.LancamentosIndexViewModel
+
+@{
+    ViewData["Title"] = "Lançamentos";
+    var classeSaldo = Model.Resumo.Saldo < 0 ? "text-danger" : Model.Resumo.Saldo > 0 ? "text-success" : "text-muted";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 mb-1">Lançamentos</h1>
+        <p class="text-muted mb-0">Acompanhe receitas, despesas e saldo do período.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Novo">Novo lançamento</a>
+</div>
+
+@if (TempData["Sucesso"] is string mensagemSucesso)
+{
+    <div class="alert alert-success" role="alert">@mensagemSucesso</div>
+}
+
+@if (TempData["Erro"] is string mensagemErro)
+{
+    <div class="alert alert-warning" role="alert">@mensagemErro</div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label asp-for="Filtro.CategoriaId" class="form-label">Categoria</label>
+                <select asp-for="Filtro.CategoriaId" class="form-select">
+                    <option value="">Todas</option>
+                    @foreach (var categoria in Model.Filtro.Categorias)
+                    {
+                        <option value="@categoria.Id">@categoria.Nome</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtro.Tipo" class="form-label">Tipo</label>
+                <select asp-for="Filtro.Tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="Receita">Receita</option>
+                    <option value="Despesa">Despesa</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtro.DataInicio" class="form-label">De</label>
+                <input asp-for="Filtro.DataInicio" type="date" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtro.DataFim" class="form-label">Até</label>
+                <input asp-for="Filtro.DataFim" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-dark">Filtrar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Limpar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 bg-success-subtle h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Receitas</div>
+                <div class="fs-3 fw-semibold text-success">@Model.Resumo.TotalReceitas.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-danger-subtle h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Despesas</div>
+                <div class="fs-3 fw-semibold text-danger">@Model.Resumo.TotalDespesas.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-light h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Saldo</div>
+                <div class="fs-3 fw-semibold @classeSaldo">@Model.Resumo.Saldo.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Lancamentos.Count == 0)
+{
+    <div class="card shadow-sm">
+        <div class="card-body py-4 text-center">
+            <h2 class="h5">Nenhum lançamento encontrado</h2>
+            <p class="text-muted mb-3">Cadastre um lançamento ou ajuste os filtros para ver resultados.</p>
+            <a class="btn btn-outline-primary" asp-action="Novo">Cadastrar lançamento</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Observação</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var lancamento in Model.Lancamentos)
+                {
+                    var classeLancamento = string.Equals(lancamento.Tipo, "Despesa", StringComparison.OrdinalIgnoreCase) || lancamento.Valor < 0
+                        ? "text-danger"
+                        : string.Equals(lancamento.Tipo, "Receita", StringComparison.OrdinalIgnoreCase) || lancamento.Valor > 0
+                            ? "text-success"
+                            : string.Empty;
+
+                    <tr>
+                        <td>@lancamento.DataLancamento.ToString("dd/MM/yyyy")</td>
+                        <td>@lancamento.Descricao</td>
+                        <td>@lancamento.CategoriaNome</td>
+                        <td class="@classeLancamento">@lancamento.Tipo</td>
+                        <td class="fw-semibold @classeLancamento">
+                            @lancamento.Valor.ToString("C")
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(lancamento.Observacao) ? "-" : lancamento.Observacao)</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary me-1" asp-action="Editar" asp-route-id="@lancamento.Id">Editar</a>
+                            <form asp-action="Excluir" asp-route-id="@lancamento.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja excluir este lançamento?');">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

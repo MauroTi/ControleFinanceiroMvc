@@ -1,0 +1,83 @@
+@model ControleFinanceiroMvc.Models.ViewModels.LancamentoFormViewModel
+
+@{
+    ViewData["Title"] = "Editar lançamento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">Editar lançamento</h1>
+                <p class="text-muted mb-0">Atualize os dados da receita ou despesa.</p>
+            </div>
+            <a class="btn btn-outline-secondary" asp-action="Index">Voltar</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Editar" method="post" novalidate>
+                    <input asp-for="Id" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Descricao" class="form-label"></label>
+                            <input asp-for="Descricao" class="form-control" />
+                            <span asp-validation-for="Descricao" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Valor" class="form-label"></label>
+                            <input asp-for="Valor" class="form-control" />
+                            <span asp-validation-for="Valor" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Tipo" class="form-label"></label>
+                            <select asp-for="Tipo" class="form-select">
+                                <option value="">Selecione</option>
+                                <option value="Receita">Receita</option>
+                                <option value="Despesa">Despesa</option>
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="CategoriaId" class="form-label"></label>
+                            <select asp-for="CategoriaId" class="form-select">
+                                <option value="">Selecione</option>
+                                @foreach (var categoria in Model.Categorias)
+                                {
+                                    <option value="@categoria.Id">@categoria.Nome (@categoria.Tipo)</option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoriaId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="DataLancamento" class="form-label"></label>
+                            <input asp-for="DataLancamento" type="date" class="form-control" />
+                            <span asp-validation-for="DataLancamento" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Observacao" class="form-label"></label>
+                            <textarea asp-for="Observacao" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Observacao" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Salvar alterações</button>
+                        <a class="btn btn-light border" asp-action="Index">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,8 +1,133 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model ControleFinanceiroMvc.Models.ViewModels.DashboardViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var classeSaldo = Model.Resumo.Saldo < 0 ? "text-danger" : Model.Resumo.Saldo > 0 ? "text-success" : "text-muted";
+    var chartData = new[] { Model.Resumo.TotalReceitas, Model.Resumo.TotalDespesas };
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 mb-1">Dashboard Financeiro</h1>
+        <p class="text-muted mb-0">Visão geral de receitas, despesas e saldo.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Lancamentos" asp-action="Novo">Novo lançamento</a>
 </div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Aviso))
+{
+    <div class="alert alert-warning" role="alert">@Model.Aviso</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 bg-success-subtle h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Receitas</div>
+                <div class="fs-3 fw-semibold text-success">@Model.Resumo.TotalReceitas.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-danger-subtle h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Despesas</div>
+                <div class="fs-3 fw-semibold text-danger">@Model.Resumo.TotalDespesas.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 bg-light h-100">
+            <div class="card-body">
+                <div class="text-muted small text-uppercase">Saldo</div>
+                <div class="fs-3 fw-semibold @classeSaldo">@Model.Resumo.Saldo.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Distribuição por Tipo</h2>
+                <canvas id="resumoPieChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">Últimos lançamentos</h2>
+                    <a asp-controller="Lancamentos" asp-action="Index" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+                </div>
+
+                @if (Model.UltimosLancamentos.Count == 0)
+                {
+                    <p class="text-muted mb-0">Nenhum lançamento encontrado.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Tipo</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var lancamento in Model.UltimosLancamentos)
+                            {
+                                var classeLancamento = string.Equals(lancamento.Tipo, "Despesa", StringComparison.OrdinalIgnoreCase) || lancamento.Valor < 0
+                                    ? "text-danger"
+                                    : string.Equals(lancamento.Tipo, "Receita", StringComparison.OrdinalIgnoreCase) || lancamento.Valor > 0
+                                        ? "text-success"
+                                        : string.Empty;
+
+                                <tr>
+                                    <td>@lancamento.DataLancamento.ToString("dd/MM/yyyy")</td>
+                                    <td>@lancamento.Descricao</td>
+                                    <td class="@classeLancamento">@lancamento.Tipo</td>
+                                    <td class="fw-semibold @classeLancamento">@lancamento.Valor.ToString("C")</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const pieValues = @Html.Raw(JsonSerializer.Serialize(chartData));
+        const ctx = document.getElementById('resumoPieChart');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Receitas', 'Despesas'],
+                datasets: [{
+                    data: pieValues,
+                    backgroundColor: ['#198754', '#dc3545'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,21 +1,41 @@
 using System.Diagnostics;
 using ControleFinanceiroMvc.Models;
+using ControleFinanceiroMvc.Models.ViewModels;
+using ControleFinanceiroMvc.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ControleFinanceiroMvc.Controllers
 {
     public class HomeController : Controller
     {
+        private const int UsuarioIdPadrao = 1;
         private readonly ILogger<HomeController> _logger;
+        private readonly ILancamentoService _lancamentoService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ILancamentoService lancamentoService)
         {
             _logger = logger;
+            _lancamentoService = lancamentoService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            try
+            {
+                var indexLancamentos = await _lancamentoService.ObterIndexAsync(UsuarioIdPadrao, new LancamentoFiltroViewModel());
+
+                var dashboard = new DashboardViewModel
+                {
+                    Resumo = indexLancamentos.Resumo,
+                    UltimosLancamentos = indexLancamentos.Lancamentos.Take(5).ToList()
+                };
+
+                return View(dashboard);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return View(new DashboardViewModel { Aviso = ex.Message });
+            }
         }
 
         public IActionResult Privacy()
